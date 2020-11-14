@@ -132,7 +132,13 @@ usertrapret(void)
   // switches to the user page table, restores user registers,
   // and switches to user mode with sret.
   uint64 fn = TRAMPOLINE + (userret - trampoline);
-  ((void (*)(uint64,uint64))fn)(TRAPFRAME, satp);
+  printf("fn: %p\n", fn);
+  printf("kvmpa(fn): %p\n", kvmpa(fn));
+  printf("kvmpa: %p\n", kvmpa(0x3ffffff094));
+  printf("userret: %p\n", userret);
+
+  // use physical address `userret` instead of virtual address `fn`
+  ((void (*)(uint64,uint64))((uint64)userret & 0xffffffff))(TRAPFRAME, satp);
 }
 
 // interrupts and exceptions from kernel code go here via kernelvec,

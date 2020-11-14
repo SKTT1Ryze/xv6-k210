@@ -7,6 +7,7 @@
 #include "include/proc.h"
 #include "include/defs.h"
 
+#include "include/sbi.h"
 
 struct cpu cpus[NCPU];
 
@@ -37,11 +38,11 @@ procinit(void)
       // Map it high in memory, followed by an invalid
       // guard page.
       char *pa = kalloc();
-      printf("[procinit]kernel stack: %p\n", (uint64)pa);
+      //printf("[procinit]kernel stack: %p\n", (uint64)pa);
       if(pa == 0)
         panic("kalloc");
       uint64 va = KSTACK((int) (p - proc));
-      printf("[procinit]kvmmap va %p to pa %p\n", va, (uint64)pa);
+      //printf("[procinit]kvmmap va %p to pa %p\n", va, (uint64)pa);
       kvmmap(va, (uint64)pa, PGSIZE, PTE_R | PTE_W);
       p->kstack = va;
   }
@@ -115,6 +116,7 @@ allocproc(void)
 
 found:
   p->pid = allocpid();
+  printf("alloc pid: %d\n", p->pid);
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -341,6 +343,52 @@ userinit(void)
   printf("try to release lock\n");
   release(&p->lock);
   printf("userinit\n");
+}
+
+uchar printhello[] = {
+    0x13, 0x00, 0x00, 0x00,     // nop
+    0x13, 0x00, 0x00, 0x00,     // nop 
+    0x13, 0x00, 0x00, 0x00,     // nop 
+    // <start>
+    0x17, 0x05, 0x00, 0x00,     // auipc a0, 0x0 
+    0x13, 0x05, 0x05, 0x00,     // mv a0, a0 
+    0x93, 0x08, 0x60, 0x01,     // li a7, 22 
+    0x73, 0x00, 0x00, 0x00,     // ecall 
+    0xef, 0xf0, 0x1f, 0xff,     // jal ra, <start>
+    // <loop>
+    0xef, 0x00, 0x00, 0x00,     // jal ra, <loop>
+};
+
+uchar test_code[] = {
+  0x13, 0x05, 0x10, 0x04, 0x93, 0x05, 0x00, 0x00, 0x13, 0x06, 0x00, 0x00, 0x93, 0x06, 0x00, 0x00,
+    0x93, 0x08, 0x10, 0x00, 0x73, 0x00, 0x00, 0x00, 0xef, 0x00, 0x00, 0x00};
+
+void whatever(void) {
+    printf("enter whatever!\n");
+    //sbi_console_putchar('a');
+    while (1) ;
+}
+
+void my_init(void) {
+    struct proc *p;
+
+    p = allocproc();
+    printf("return from allocproc()\n");
+    initproc = p;
+
+    uvminit(p->pagetable, (uchar*)test_code, sizeof(test_code));
+    p->sz = PGSIZE;
+
+    printf("whatever: %p\n", (uint64)whatever);
+    //p->trapframe->epc = (uint64)(0xffffffff & (uint64)whatever) + 4;
+    p->trapframe->epc = 0x40;
+    p->trapframe->sp = PGSIZE;
+
+    safestrcpy(p->name, "myinit", sizeof(p->name));
+
+    p->state = RUNNABLE;
+
+    release(&p->lock);
 }
 
 // Grow or shrink user memory by n bytes.
@@ -655,7 +703,7 @@ forkret(void)
     // regular process (e.g., because it calls sleep), and thus cannot
     // be run from main().
     first = 0;
-    fsinit(ROOTDEV);
+    //fsinit(ROOTDEV);
   }
 
   usertrapret();

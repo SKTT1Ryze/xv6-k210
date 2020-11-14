@@ -192,13 +192,15 @@ static inline void
 w_satp(uint64 x)
 {
   asm volatile("csrw satp, %0" : : "r" (x));
+  //asm volatile("csrw sptbr, %0" : : "r" (x));
 }
 
 static inline uint64
 r_satp()
 {
   uint64 x;
-  asm volatile("csrr %0, satp" : "=r" (x) );
+  //asm volatile("csrr %0, satp" : "=r" (x) );
+  asm volatile("csrr %0, sptbr" : "=r" (x));
   return x;
 }
 

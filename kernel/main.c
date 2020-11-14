@@ -18,6 +18,9 @@ void
 main(unsigned long hartid, unsigned long dtb_pa)
 {
   inithartid(hartid);
+
+  // disable hartid 1
+  //while (1 == hartid) ;
   
   if (hartid == 0) {
     printfinit();   // init a lock for printf 
@@ -27,7 +30,7 @@ main(unsigned long hartid, unsigned long dtb_pa)
     //printf("hart %d enter main()...\n", hartid);
     kinit();         // physical page allocator
     kvminit();       // create kernel page table
-    kvminithart();   // turn on paging
+    //kvminithart();   // turn on paging
     trapinit();      // trap vectors
     trapinithart();  // install kernel trap vector
     timerinit();     // set up timer interrupt handler
@@ -41,7 +44,9 @@ main(unsigned long hartid, unsigned long dtb_pa)
     //iinit();         // inode cache
     //fileinit();      // file table
     //virtio_disk_init(); // emulated hard disk
-    userinit();      // first user process
+    //userinit();      // first user process
+    extern void my_init(void);
+    my_init();
     
     //test_kalloc();    // test kalloc
     //test_vm(hartid);       // test kernel pagetable
@@ -58,8 +63,6 @@ main(unsigned long hartid, unsigned long dtb_pa)
   } else
   {
     // hart 1
-    while (started == 0)
-      ;
     __sync_synchronize();
     // printf("hart %d enter main()...\n", hartid);
     printf("hart 1 init done\n");

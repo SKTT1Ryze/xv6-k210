@@ -94,10 +94,12 @@ userret:
         # a0: TRAPFRAME, in user page table.
         # a1: user page table, for satp.
 
+
         # switch to the user page table.
         csrw satp, a1
         
-        ; sfence.vma zero, zero
+        # sfence.vma zero, zero
+        #sfence.vma
         sfence.vm
 
         # put the saved user a0 in sscratch, so we
@@ -137,9 +139,10 @@ userret:
         ld t5, 272(a0)
         ld t6, 280(a0)
 
-	# restore user a0, and save TRAPFRAME in sscratch
+	    # restore user a0, and save TRAPFRAME in sscratch
         csrrw a0, sscratch, a0
         
         # return to user mode and user pc.
         # usertrapret() set up sstatus and sepc.
         sret
+

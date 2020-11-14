@@ -62,7 +62,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb
+CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -Ttext=0x80000000
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
 CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
@@ -103,8 +103,8 @@ k210 = $T/k210.bin
 k210-serialport := /dev/ttyUSB0
 
 k210: build
-	@riscv64-unknown-elf-objcopy $T/kernel --strip-all -O binary $(image)
-	@riscv64-unknown-elf-objcopy $(RUSTSBI) --strip-all -O binary $(k210)
+	@$(OBJCOPY) $T/kernel --strip-all -O binary $(image)
+	@$(OBJCOPY) $(RUSTSBI) --strip-all -O binary $(k210)
 	# @cp $(RUSTSBI) $(k210)
 	@dd if=$(image) of=$(k210) bs=128k seek=1
 	# @dd if=sdcard.bin of=$(k210) bs=128k seek=3
@@ -112,6 +112,7 @@ k210: build
 
 run-k210: k210
 	@sudo chmod 777 $(k210-serialport)
+	#python3 ./tools/kflash.py -p $(k210-serialport) -b 1500000 -t $(k210)
 	python3 ./tools/kflash.py -p $(k210-serialport) -b 1500000 -t $(k210)
 
 
