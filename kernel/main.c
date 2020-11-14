@@ -63,6 +63,8 @@ main(unsigned long hartid, unsigned long dtb_pa)
   } else
   {
     // hart 1
+    while (0 == started) 
+        ;
     __sync_synchronize();
     // printf("hart %d enter main()...\n", hartid);
     printf("hart 1 init done\n");
