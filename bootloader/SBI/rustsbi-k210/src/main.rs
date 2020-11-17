@@ -493,10 +493,10 @@ extern "C" fn start_trap_rust(trap_frame: &mut TrapFrame) {
                 unsafe { llvm_asm!("csrw 0x180, $0"::"r"(sptbr_bits)) }; // write to sptbr
                 println!("[rustsbi]write {:016x?} to sptbr", sptbr_bits);
                 // enable paging (in v1.9.1, mstatus: | 28..24 VM[4:0] WARL | ... )
-                let mut mstatus_bits: usize; 
+                let mut mstatus_bits: usize;
                 unsafe { llvm_asm!("csrr $0, mstatus":"=r"(mstatus_bits)) };
                 mstatus_bits &= !0x1F00_0000;
-                mstatus_bits |= 9 << 24; 
+                mstatus_bits |= 9 << 24;
                 unsafe { llvm_asm!("csrw mstatus, $0"::"r"(mstatus_bits)) };
                 // emulate with sfence.vm (declared in privileged spec v1.9)
                 unsafe { llvm_asm!(".word 0x10400073") }; // sfence.vm x0
