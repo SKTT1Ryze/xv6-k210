@@ -1,7 +1,7 @@
+# This repo has been move to [here](https://github.com/HUST-OS/xv6-k210)  
 # XV6-RISCV On K210
 Run xv6-riscv on k210 board  
-This repo has been move to [here](https://github.com/HUST-OS/xv6-k210)  
-[English](./README.md) [中文](./README_cn.md)   
+English](./README.md) [中文](./README_cn.md)   
 
 ```
  (`-')           (`-')                   <-.(`-')                            
